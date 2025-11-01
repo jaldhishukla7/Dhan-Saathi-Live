@@ -1,0 +1,19 @@
+# Core
+fastapi==0.115.2
+uvicorn[standard]==0.30.3
+
+# Database
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Validation and typing
+pydantic==2.8.2
+pydantic-settings==2.3.4
+
+# Optional but helpful for debugging and CORS (when frontend connects)
+alembic==1.13.2
+python-multipart==0.0.9
+requests==2.32.3
