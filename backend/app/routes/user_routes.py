@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.db.database import SessionLocal
 from app.models.user import User
 from app.core.auth import create_access_token, verify_access_token
+from typing import Annotated
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -22,7 +23,7 @@ class UserResponse(BaseModel):
     email: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ---------- DB DEPENDENCY ----------
 def get_db():
@@ -100,4 +101,47 @@ def get_my_profile(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "username": current_user.username,
         "email": current_user.email
+    }
+
+
+# ----------------- User management helpers (append after get_my_profile) -----------------
+
+class UserUpdate(BaseModel):
+    username: str | None = None
+    email: str | None = None
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
+
+@router.patch("/me", tags=["Users"])
+def update_my_profile(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update current user's username and/or email (partial update)."""
+    changed = False
+
+    if payload.username and payload.username != current_user.username:
+        current_user.username = payload.username
+        changed = True
+
+    if payload.email and payload.email != current_user.email:
+        # ensure email uniqueness
+        existing = db.query(User).filter(User.email == payload.email).first()
+        if existing and existing.id != current_user.id:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        current_user.email = payload.email
+        changed = True
+
+    if changed:
+        db.add(current_user)
+        db.commit()
+        db.refresh(current_user)
+
+    return {
+        "message": "Profile updated",
+        "user": {"id": current_user.id, "username": current_user.username, "email": current_user.email},
     }
