@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -25,7 +25,10 @@ import {
   Send,
   X,
   Minimize2,
-  Maximize2
+  Maximize2,
+  User,
+  CreditCard,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
@@ -112,6 +115,22 @@ const AIChatWidget = () => {
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Financial metrics
   const financialMetrics = [
@@ -173,7 +192,7 @@ const Dashboard = () => {
             {/* Left: Logo and Navigation */}
             <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-linear-to-r from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
                   <IndianRupee className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -217,14 +236,79 @@ const Dashboard = () => {
                   <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 </button>
                 
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                    {user?.name?.charAt(0) || 'R'}
-                  </div>
-                  <div className="hidden md:block">
-                    <p className="text-sm font-medium text-gray-900">{user?.name || 'Jaldhi Shukla'}</p>
-                    <p className="text-xs text-gray-500">Premium Investor</p>
-                  </div>
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileDropdownRef}>
+                  <button 
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-1"
+                  >
+                    <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                      {user?.name?.charAt(0) || 'J'}
+                    </div>
+                    <div className="hidden md:block">
+                      <p className="text-sm font-medium text-gray-900">{user?.name || 'Jaldhi Shukla'}</p>
+                      <p className="text-xs text-gray-500">Premium Investor</p>
+                    </div>
+                    <svg 
+                      className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showProfileDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">{user?.name || 'Jaldhi Shukla'}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email || 'jaldhi@example.com'}</p>
+                      </div>
+                      
+                      <div className="py-1">
+                        <a 
+                          href="#" 
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <User className="w-4 h-4 mr-3 text-gray-500" />
+                          My Profile
+                        </a>
+                        <a 
+                          href="#" 
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <CreditCard className="w-4 h-4 mr-3 text-gray-500" />
+                          Subscription
+                        </a>
+                        <a 
+                          href="#" 
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Settings className="w-4 h-4 mr-3 text-gray-500" />
+                          Settings
+                        </a>
+                        <a 
+                          href="#" 
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <HelpCircle className="w-4 h-4 mr-3 text-gray-500" />
+                          Help & Support
+                        </a>
+                      </div>
+                      
+                      <div className="border-t border-gray-100 py-1">
+                        <button
+                          onClick={logout}
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        >
+                          <LogOut className="w-4 h-4 mr-3" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -527,7 +611,7 @@ const Dashboard = () => {
           {/* Right Column - 1/3 width */}
           <div className="space-y-6">
             {/* AI Quick Actions */}
-            <div className="bg-linear-to-br from-emerald-900 to-teal-800 rounded-lg p-5 text-white">
+            <div className="bg-gradient-to-br from-emerald-900 to-teal-800 rounded-lg p-5 text-white">
               <h3 className="font-semibold mb-4">AI Quick Actions</h3>
               <div className="space-y-2">
                 <button className="w-full bg-white/10 hover:bg-white/20 text-sm py-3 px-4 rounded-lg flex items-center justify-between">
