@@ -1,4 +1,4 @@
-// src/pages/Dashboard.tsx - Updated version with dynamic data
+// src/pages/Dashboard.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
   TrendingUp,
@@ -28,12 +28,90 @@ import {
   Maximize2,
   User,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  Minus
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import logo from '../assets/logo-dash.png';
 
-// Chatbot Component (unchanged)
+// ─── MARKET SENTIMENT CARD ────────────────────────────────────────
+const MarketSentimentCard = () => {
+  const sentiment = { bullish: 65, bearish: 20, neutral: 15 };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100">
+        <h3 className="font-semibold text-gray-900">Market Sentiment</h3>
+      </div>
+      <div className="p-5 space-y-5">
+        {/* Sentiment bar */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-4 text-sm font-medium">
+              <span className="flex items-center gap-1.5 text-green-600">
+                <TrendingUp className="w-4 h-4" />
+                Bullish {sentiment.bullish}%
+              </span>
+              <span className="flex items-center gap-1.5 text-red-500">
+                <TrendingDown className="w-4 h-4" />
+                Bearish {sentiment.bearish}%
+              </span>
+              <span className="flex items-center gap-1.5 text-gray-500">
+                <Minus className="w-4 h-4" />
+                Neutral {sentiment.neutral}%
+              </span>
+            </div>
+          </div>
+
+          {/* Three‑segment bar */}
+          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
+            <div
+              className="h-full bg-green-500 transition-all duration-500"
+              style={{ width: `${sentiment.bullish}%` }}
+            />
+            <div
+              className="h-full bg-red-400 transition-all duration-500"
+              style={{ width: `${sentiment.bearish}%` }}
+            />
+            <div
+              className="h-full bg-gray-300 transition-all duration-500"
+              style={{ width: `${sentiment.neutral}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Alerts */}
+        <div className="space-y-3">
+          <div className="group flex items-start gap-3 p-3 rounded-lg bg-blue-50/70 hover:bg-blue-50 border border-blue-100/80 transition-colors cursor-pointer">
+            <div className="p-1.5 bg-blue-100 rounded-full">
+              <AlertCircle className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-blue-900">Tech Sector Alert</p>
+              <p className="text-xs text-blue-700 mt-0.5 leading-relaxed">
+                IT stocks showing 15% YTD growth
+              </p>
+            </div>
+          </div>
+
+          <div className="group flex items-start gap-3 p-3 rounded-lg bg-amber-50/70 hover:bg-amber-50 border border-amber-100/80 transition-colors cursor-pointer">
+            <div className="p-1.5 bg-amber-100 rounded-full">
+              <AlertCircle className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-amber-900">Interest Rates</p>
+              <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                RBI meeting outcome expected tomorrow
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── AI CHAT WIDGET ────────────────────────────────────────────────
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -56,7 +134,6 @@ const AIChatWidget = () => {
       transition-all duration-300 ${isMinimized ? 'h-12' : 'h-96'}
       z-50
     `}>
-      {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
@@ -84,16 +161,16 @@ const AIChatWidget = () => {
 
       {!isMinimized && (
         <>
-          {/* Messages */}
           <div className="h-64 overflow-y-auto p-3 space-y-3">
             <div className="flex justify-start">
               <div className="bg-gray-100 rounded-lg rounded-bl-none p-3 max-w-[80%]">
-                <p className="text-sm text-gray-800">Hello! I'm your DhanSaathi AI assistant. How can I help with your investments today?</p>
+                <p className="text-sm text-gray-800">
+                  Hello! I'm your DhanSaathi AI assistant. How can I help with your investments today?
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Input */}
           <div className="p-3 border-t border-gray-200">
             <div className="flex gap-2">
               <input
@@ -114,6 +191,7 @@ const AIChatWidget = () => {
   );
 };
 
+// ─── MAIN DASHBOARD ───────────────────────────────────────────────
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -126,30 +204,25 @@ const Dashboard = () => {
   });
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setShowProfileDropdown(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const getUserFirstName = () => {
     if (!user?.username) return "Investor";
     return user.username.split(" ")[0];
   };
-  
+
   const getDisplayName = () => {
     return user?.username || "Premium Investor";
   };
 
-  // Format current date
   const getCurrentDate = () => {
     const now = new Date();
     return now.toLocaleDateString('en-IN', {
@@ -160,7 +233,6 @@ const Dashboard = () => {
     });
   };
 
-  // Financial metrics - now dynamic
   const financialMetrics = [
     {
       title: 'Portfolio Value',
@@ -195,7 +267,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Portfolio allocation
   const portfolioAllocation = [
     { name: 'Equity', value: 65, color: '#059669', amount: '₹8.09L' },
     { name: 'Mutual Funds', value: 20, color: '#2563eb', amount: '₹2.49L' },
@@ -203,7 +274,6 @@ const Dashboard = () => {
     { name: 'Gold', value: 5, color: '#d97706', amount: '₹62,250' },
   ];
 
-  // NSE Top gainers
   const topGainers = [
     { symbol: 'RELIANCE', name: 'Reliance Industries', price: '₹2,845.60', change: '+2.8%', volume: '42.5L' },
     { symbol: 'TCS', name: 'Tata Consultancy', price: '₹3,892.15', change: '+1.9%', volume: '18.2L' },
@@ -211,9 +281,7 @@ const Dashboard = () => {
     { symbol: 'HDFCBANK', name: 'HDFC Bank', price: '₹1,582.30', change: '+1.5%', volume: '28.3L' },
   ];
 
-  // Handle refresh data
   const handleRefresh = () => {
-    // Simulate data refresh
     const newData = {
       ...dashboardData,
       lastUpdated: 'Just now',
@@ -225,7 +293,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation - Wider like BSE/NSE */}
+      {/* Top Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-screen-2xl mx-auto px-6">
           <div className="flex items-center justify-between py-3">
@@ -242,7 +310,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Navigation Links */}
               <div className="hidden lg:flex items-center space-x-6">
                 <a href="#" className="text-sm font-medium text-gray-700 hover:text-emerald-600">Dashboard</a>
                 <a href="#" className="text-sm font-medium text-gray-700 hover:text-emerald-600">Portfolio</a>
@@ -254,7 +321,6 @@ const Dashboard = () => {
 
             {/* Right: Market Data and User */}
             <div className="flex items-center space-x-6">
-              {/* Live Market Data */}
               <div className="hidden xl:flex items-center space-x-6">
                 <div className="text-right">
                   <div className="text-xs text-gray-500">NIFTY 50</div>
@@ -270,7 +336,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* User Actions */}
               <div className="flex items-center space-x-4">
                 <button className="relative p-1.5 hover:bg-gray-100 rounded">
                   <Bell className="w-4 h-4 text-gray-600" />
@@ -283,15 +348,11 @@ const Dashboard = () => {
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-1"
                   >
-                    {/* <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {getUserFirstName().charAt(0).toUpperCase()}
-                    </div> */}
                     <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                       {user?.username?.charAt(0).toUpperCase()}
                     </div>
                     <div className="hidden md:block">
                       <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
-                      {/* <p className="text-xs text-gray-500">{user?.plan || 'Premium Investor'}</p> */}
                       <p className="text-xs text-gray-500">Premium User</p>
                     </div>
                     <svg
@@ -304,7 +365,6 @@ const Dashboard = () => {
                     </svg>
                   </button>
 
-                  {/* Dropdown Menu */}
                   {showProfileDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                       <div className="px-4 py-3 border-b border-gray-100">
@@ -313,31 +373,19 @@ const Dashboard = () => {
                       </div>
 
                       <div className="py-1">
-                        <a
-                          href="#"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                        <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <User className="w-4 h-4 mr-3 text-gray-500" />
                           My Profile
                         </a>
-                        <a
-                          href="#"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                        <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <CreditCard className="w-4 h-4 mr-3 text-gray-500" />
                           Subscription
                         </a>
-                        <a
-                          href="#"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                        <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <Settings className="w-4 h-4 mr-3 text-gray-500" />
                           Settings
                         </a>
-                        <a
-                          href="#"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
+                        <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <HelpCircle className="w-4 h-4 mr-3 text-gray-500" />
                           Help & Support
                         </a>
@@ -361,7 +409,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Dashboard - Wide Layout */}
+      {/* Main Dashboard Content */}
       <div className="max-w-screen-2xl mx-auto px-6 py-4">
         {/* Welcome and Quick Stats */}
         <div className="mb-6">
@@ -389,7 +437,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Financial Metrics Grid - 4 columns */}
+        {/* Financial Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {financialMetrics.map((metric, index) => {
             const Icon = metric.icon;
@@ -400,8 +448,7 @@ const Dashboard = () => {
                     <p className="text-xs text-gray-500 mb-1">{metric.title}</p>
                     <p className="text-lg font-bold text-gray-900">{metric.value}</p>
                     {metric.change && (
-                      <div className={`flex items-center text-xs mt-1 ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                      <div className={`flex items-center text-xs mt-1 ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                         {metric.change.startsWith('+') ?
                           <TrendingUp className="w-3 h-3 mr-1" /> :
                           <TrendingDown className="w-3 h-3 mr-1" />
@@ -419,11 +466,11 @@ const Dashboard = () => {
           })}
         </div>
 
-        {/* Main Content Grid - Wider Layout */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - 2/3 width */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Portfolio Overview - Wider Card */}
+            {/* Portfolio Overview */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
@@ -568,7 +615,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* AI Predictions Table - Wide */}
+            {/* AI Stock Predictions Table */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-200 flex justify-between items-center">
                 <div>
@@ -737,55 +784,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Market Sentiment & News */}
-            <div className="bg-white rounded-lg border border-gray-200">
-              <div className="px-4 py-3 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-900">Market Sentiment</h3>
-              </div>
-              <div className="p-4">
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Bullish: 65%</span>
-                    <span>Bearish: 20%</span>
-                    <span>Neutral: 15%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-500 h-2 rounded-full"
-                      style={{ width: '65%' }}
-                    ></div>
-                    <div
-                      className="bg-red-500 h-2 rounded-full -ml-1"
-                      style={{ width: '20%' }}
-                    ></div>
-                  </div>
-                </div>
+            {/* ─── Market Sentiment (NEW) ─── */}
+            <MarketSentimentCard />
 
-                <div className="space-y-3">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <div className="flex items-start">
-                      <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 mr-2" />
-                      <div>
-                        <p className="text-sm font-medium text-blue-900">Tech Sector Alert</p>
-                        <p className="text-xs text-blue-700 mt-1">IT stocks showing 15% YTD growth</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-amber-50 rounded-lg">
-                    <div className="flex items-start">
-                      <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 mr-2" />
-                      <div>
-                        <p className="text-sm font-medium text-amber-900">Interest Rates</p>
-                        <p className="text-xs text-amber-700 mt-1">RBI meeting outcome expected tomorrow</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
+            {/* Quick Stats / Portfolio Metrics */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h4 className="text-sm font-medium text-gray-900 mb-3">Portfolio Metrics</h4>
               <div className="grid grid-cols-2 gap-3">
