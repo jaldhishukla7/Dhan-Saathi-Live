@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  IndianRupee, 
-  Shield, 
-  Lock, 
-  Mail, 
-  Eye, 
+import {
+  IndianRupee,
+  Shield,
+  Lock,
+  Mail,
+  Eye,
   EyeOff,
   ArrowRight,
   AlertCircle,
@@ -16,6 +16,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { loginUser } from "../services/authService";
+import logo from '../assets/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,24 +25,24 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{email?: string, password?: string}>({});
+  const [validationErrors, setValidationErrors] = useState<{ email?: string, password?: string }>({});
 
   const navigate = useNavigate();
 
   const validateForm = () => {
-    const errors: {email?: string, password?: string} = {};
+    const errors: { email?: string, password?: string } = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (!email.trim()) {
       errors.email = "Email is required";
     } else if (!emailRegex.test(email)) {
       errors.email = "Please enter a valid email address";
     }
-    
+
     if (!password.trim()) {
       errors.password = "Password is required";
     }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -72,7 +73,7 @@ const Login = () => {
 
       // Show success message
       setError("success");
-      
+
       // Redirect after a short delay
       setTimeout(() => {
         navigate("/dashboard");
@@ -88,26 +89,26 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/50 flex items-center justify-center p-4">
       {/* Main Container */}
       <div className="w-full max-w-6xl flex flex-col lg:flex-row bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-        
+
         {/* Left Side - Brand & Features */}
         <div className="lg:w-5/12 bg-gradient-to-br from-emerald-900 to-teal-800 text-white p-10 flex flex-col">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <IndianRupee className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Dhan Saathi</h1>
-              <p className="text-sm text-emerald-200">AI Financial Platform</p>
-            </div>
+          <div className="flex items-center gap-3 -ml-8">
+            <img
+              src={logo}
+              alt="DhanSaathi Logo" style={{ height: '135px' }}
+              className="h-24 w-auto"
+            />
           </div>
+
+
 
           {/* Main Content */}
           <div className="flex-1">
             <h2 className="text-3xl font-bold mb-6 leading-tight">
               Welcome to Your Financial Command Center
             </h2>
-            
+
             <p className="text-emerald-100 mb-8">
               AI-powered portfolio management, real-time market insights, and intelligent investment strategies.
             </p>
@@ -217,14 +218,13 @@ const Login = () => {
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (validationErrors.email) {
-                        setValidationErrors(prev => ({...prev, email: undefined}));
+                        setValidationErrors(prev => ({ ...prev, email: undefined }));
                       }
                     }}
-                    className={`w-full pl-12 pr-4 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 ${
-                      validationErrors.email 
-                        ? 'border-red-300 focus:border-red-500' 
-                        : 'border-slate-200 hover:border-slate-300 focus:border-emerald-500'
-                    }`}
+                    className={`w-full pl-12 pr-4 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 ${validationErrors.email
+                      ? 'border-red-300 focus:border-red-500'
+                      : 'border-slate-200 hover:border-slate-300 focus:border-emerald-500'
+                      }`}
                     placeholder="enter@email.com"
                     required
                   />
@@ -257,14 +257,13 @@ const Login = () => {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (validationErrors.password) {
-                        setValidationErrors(prev => ({...prev, password: undefined}));
+                        setValidationErrors(prev => ({ ...prev, password: undefined }));
                       }
                     }}
-                    className={`w-full pl-12 pr-12 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 ${
-                      validationErrors.password 
-                        ? 'border-red-300 focus:border-red-500' 
-                        : 'border-slate-200 hover:border-slate-300 focus:border-emerald-500'
-                    }`}
+                    className={`w-full pl-12 pr-12 py-3.5 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-200 ${validationErrors.password
+                      ? 'border-red-300 focus:border-red-500'
+                      : 'border-slate-200 hover:border-slate-300 focus:border-emerald-500'
+                      }`}
                     placeholder="••••••••"
                     required
                   />
@@ -292,11 +291,10 @@ const Login = () => {
               {/* Remember & Forgot */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`relative w-5 h-5 border-2 rounded-md transition-all duration-200 ${
-                    remember 
-                      ? 'bg-emerald-500 border-emerald-500' 
-                      : 'border-slate-300 group-hover:border-emerald-400'
-                  }`}>
+                  <div className={`relative w-5 h-5 border-2 rounded-md transition-all duration-200 ${remember
+                    ? 'bg-emerald-500 border-emerald-500'
+                    : 'border-slate-300 group-hover:border-emerald-400'
+                    }`}>
                     {remember && <CheckCircle className="absolute inset-0 w-full h-full p-0.5 text-white" />}
                   </div>
                   <input
@@ -343,7 +341,7 @@ const Login = () => {
                     to="/register"
                     className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
                   >
-                    Create one
+                    Create Account
                   </Link>
                 </p>
               </div>

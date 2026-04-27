@@ -1,9 +1,9 @@
-// src/pages/Dashboard.tsx
+// src/pages/Dashboard.tsx - Updated version with dynamic data
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  PieChart, 
+import {
+  TrendingUp,
+  TrendingDown,
+  PieChart,
   Shield,
   Zap,
   Brain,
@@ -31,8 +31,9 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import logo from '../assets/logo-dash.png';
 
-// Chatbot Component
+// Chatbot Component (unchanged)
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -66,13 +67,13 @@ const AIChatWidget = () => {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button 
+          <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-1 hover:bg-gray-100 rounded"
           >
             {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
           </button>
-          <button 
+          <button
             onClick={() => setIsOpen(false)}
             className="p-1 hover:bg-gray-100 rounded"
           >
@@ -116,6 +117,13 @@ const AIChatWidget = () => {
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    portfolioValue: '₹12.45L',
+    todayPnl: '₹8,450',
+    aiAccuracy: '87%',
+    riskScore: '6.2/10',
+    lastUpdated: 'Just now'
+  });
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -132,35 +140,55 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Financial metrics
+  const getUserFirstName = () => {
+    if (!user?.username) return "Investor";
+    return user.username.split(" ")[0];
+  };
+  
+  const getDisplayName = () => {
+    return user?.username || "Premium Investor";
+  };
+
+  // Format current date
+  const getCurrentDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Financial metrics - now dynamic
   const financialMetrics = [
-    { 
-      title: 'Portfolio Value', 
-      value: '₹12.45L', 
+    {
+      title: 'Portfolio Value',
+      value: dashboardData.portfolioValue,
       change: '+12.4%',
       icon: IndianRupee,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50'
     },
-    { 
-      title: "Today's P&L", 
-      value: '₹8,450', 
+    {
+      title: "Today's P&L",
+      value: dashboardData.todayPnl,
       change: '+1.8%',
       icon: TrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
-    { 
-      title: 'AI Accuracy', 
-      value: '87%', 
+    {
+      title: 'AI Accuracy',
+      value: dashboardData.aiAccuracy,
       change: '+2.1%',
       icon: Brain,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
     },
-    { 
-      title: 'Risk Score', 
-      value: '6.2/10', 
+    {
+      title: 'Risk Score',
+      value: dashboardData.riskScore,
       icon: Shield,
       color: 'text-amber-600',
       bgColor: 'bg-amber-50'
@@ -183,6 +211,18 @@ const Dashboard = () => {
     { symbol: 'HDFCBANK', name: 'HDFC Bank', price: '₹1,582.30', change: '+1.5%', volume: '28.3L' },
   ];
 
+  // Handle refresh data
+  const handleRefresh = () => {
+    // Simulate data refresh
+    const newData = {
+      ...dashboardData,
+      lastUpdated: 'Just now',
+      todayPnl: `₹${Math.floor(Math.random() * 5000) + 6000}`,
+      portfolioValue: `₹${(Math.random() * 2 + 12).toFixed(2)}L`
+    };
+    setDashboardData(newData);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation - Wider like BSE/NSE */}
@@ -192,12 +232,13 @@ const Dashboard = () => {
             {/* Left: Logo and Navigation */}
             <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
-                  <IndianRupee className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">DhanSaathi</h1>
-                  <p className="text-xs text-gray-500">AI Financial Platform</p>
+                <div className="-ml-6">
+                  <img
+                    src={logo}
+                    alt="DhanSaathi Logo"
+                    style={{ height: '100px' }}
+                    className="h-24 w-auto"
+                  />
                 </div>
               </div>
 
@@ -235,24 +276,28 @@ const Dashboard = () => {
                   <Bell className="w-4 h-4 text-gray-600" />
                   <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                 </button>
-                
+
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileDropdownRef}>
-                  <button 
+                  <button
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-1"
                   >
+                    {/* <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                      {getUserFirstName().charAt(0).toUpperCase()}
+                    </div> */}
                     <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {user?.name?.charAt(0) || 'J'}
+                      {user?.username?.charAt(0).toUpperCase()}
                     </div>
                     <div className="hidden md:block">
-                      <p className="text-sm font-medium text-gray-900">{user?.name || 'Jaldhi Shukla'}</p>
-                      <p className="text-xs text-gray-500">Premium Investor</p>
+                      <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
+                      {/* <p className="text-xs text-gray-500">{user?.plan || 'Premium Investor'}</p> */}
+                      <p className="text-xs text-gray-500">Premium User</p>
                     </div>
-                    <svg 
+                    <svg
                       className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`}
-                      fill="none" 
-                      stroke="currentColor" 
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -263,41 +308,41 @@ const Dashboard = () => {
                   {showProfileDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{user?.name || 'Jaldhi Shukla'}</p>
-                        <p className="text-xs text-gray-500 truncate">{user?.email || 'jaldhi@example.com'}</p>
+                        <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email || 'No email available'}</p>
                       </div>
-                      
+
                       <div className="py-1">
-                        <a 
-                          href="#" 
+                        <a
+                          href="#"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <User className="w-4 h-4 mr-3 text-gray-500" />
                           My Profile
                         </a>
-                        <a 
-                          href="#" 
+                        <a
+                          href="#"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <CreditCard className="w-4 h-4 mr-3 text-gray-500" />
                           Subscription
                         </a>
-                        <a 
-                          href="#" 
+                        <a
+                          href="#"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <Settings className="w-4 h-4 mr-3 text-gray-500" />
                           Settings
                         </a>
-                        <a 
-                          href="#" 
+                        <a
+                          href="#"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <HelpCircle className="w-4 h-4 mr-3 text-gray-500" />
                           Help & Support
                         </a>
                       </div>
-                      
+
                       <div className="border-t border-gray-100 py-1">
                         <button
                           onClick={logout}
@@ -322,19 +367,17 @@ const Dashboard = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Welcome back, {user?.name?.split(' ')[0] || 'Jaldhi'}</h1>
+              <h1 className="text-xl font-bold text-gray-900">Welcome back, {getUserFirstName()}</h1>
               <div className="flex items-center text-sm text-gray-500 mt-1">
                 <Clock className="w-3 h-3 mr-1" />
-                {new Date().toLocaleDateString('en-IN', { 
-                  weekday: 'short', 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })} • Last updated: Just now
+                {getCurrentDate()} • Last updated: {dashboardData.lastUpdated}
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg flex items-center">
+              <button
+                onClick={handleRefresh}
+                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg flex items-center"
+              >
                 <RefreshCw className="w-3 h-3 mr-1" />
                 Refresh
               </button>
@@ -357,11 +400,10 @@ const Dashboard = () => {
                     <p className="text-xs text-gray-500 mb-1">{metric.title}</p>
                     <p className="text-lg font-bold text-gray-900">{metric.value}</p>
                     {metric.change && (
-                      <div className={`flex items-center text-xs mt-1 ${
-                        metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {metric.change.startsWith('+') ? 
-                          <TrendingUp className="w-3 h-3 mr-1" /> : 
+                      <div className={`flex items-center text-xs mt-1 ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                        {metric.change.startsWith('+') ?
+                          <TrendingUp className="w-3 h-3 mr-1" /> :
                           <TrendingDown className="w-3 h-3 mr-1" />
                         }
                         {metric.change}
@@ -397,7 +439,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Allocation Chart */}
@@ -407,15 +449,15 @@ const Dashboard = () => {
                       {portfolioAllocation.map((item, index) => (
                         <div key={index} className="flex items-center justify-between">
                           <div className="flex items-center flex-1">
-                            <div 
-                              className="w-3 h-3 rounded mr-3" 
+                            <div
+                              className="w-3 h-3 rounded mr-3"
                               style={{ backgroundColor: item.color }}
                             ></div>
                             <span className="text-sm text-gray-700">{item.name}</span>
                             <div className="ml-4 w-48 bg-gray-200 rounded-full h-2">
-                              <div 
+                              <div
                                 className="h-2 rounded-full"
-                                style={{ 
+                                style={{
                                   backgroundColor: item.color,
                                   width: `${item.value}%`
                                 }}
@@ -439,12 +481,12 @@ const Dashboard = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="text-xs text-gray-600">1D Return</p>
-                            <p className="text-sm font-bold text-green-700">+₹8,450</p>
+                            <p className="text-sm font-bold text-green-700">{dashboardData.todayPnl}</p>
                           </div>
                           <span className="text-xs text-green-600">+1.8%</span>
                         </div>
                       </div>
-                      
+
                       <div className="p-3 bg-blue-50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <div>
@@ -454,7 +496,7 @@ const Dashboard = () => {
                           <span className="text-xs text-blue-600">+4.2%</span>
                         </div>
                       </div>
-                      
+
                       <div className="p-3 bg-purple-50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <div>
@@ -535,14 +577,14 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
-                    87% Accuracy
+                    {dashboardData.aiAccuracy} Accuracy
                   </span>
                   <button className="p-1.5 hover:bg-gray-100 rounded">
                     <Filter className="w-3 h-3" />
                   </button>
                 </div>
               </div>
-              
+
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
@@ -567,13 +609,12 @@ const Dashboard = () => {
                       <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
                         <td className="px-5 py-3 font-medium text-gray-900">{prediction.stock}</td>
                         <td className="px-5 py-3">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            prediction.action.includes('BUY') 
-                              ? 'bg-green-100 text-green-800' 
-                              : prediction.action === 'HOLD'
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${prediction.action.includes('BUY')
+                            ? 'bg-green-100 text-green-800'
+                            : prediction.action === 'HOLD'
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-red-100 text-red-800'
-                          }`}>
+                            }`}>
                             {prediction.action}
                           </span>
                         </td>
@@ -582,12 +623,11 @@ const Dashboard = () => {
                         <td className="px-5 py-3">
                           <div className="flex items-center">
                             <div className="w-24 bg-gray-200 rounded-full h-1.5 mr-3">
-                              <div 
-                                className={`h-1.5 rounded-full ${
-                                  prediction.confidence >= 85 ? 'bg-green-500' : 
-                                  prediction.confidence >= 70 ? 'bg-amber-500' : 
-                                  'bg-red-500'
-                                }`}
+                              <div
+                                className={`h-1.5 rounded-full ${prediction.confidence >= 85 ? 'bg-green-500' :
+                                  prediction.confidence >= 70 ? 'bg-amber-500' :
+                                    'bg-red-500'
+                                  }`}
                                 style={{ width: `${prediction.confidence}%` }}
                               ></div>
                             </div>
@@ -631,7 +671,7 @@ const Dashboard = () => {
                   <BarChart3 className="w-4 h-4" />
                 </button>
               </div>
-              
+
               <div className="mt-6 pt-4 border-t border-white/20">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-sm text-emerald-200">AI Agents Status</div>
@@ -663,7 +703,7 @@ const Dashboard = () => {
                 <h3 className="font-semibold text-gray-900">Recent Transactions</h3>
                 <button className="text-xs text-blue-600">View all</button>
               </div>
-              
+
               <div className="p-4">
                 {[
                   { type: 'BUY', stock: 'RELIANCE', qty: '25', amount: '₹71,140', time: '10:24 AM', status: 'Completed' },
@@ -674,9 +714,8 @@ const Dashboard = () => {
                 ].map((txn, i) => (
                   <div key={i} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                     <div className="flex items-center">
-                      <div className={`w-7 h-7 rounded text-xs flex items-center justify-center font-bold mr-3 ${
-                        txn.type === 'BUY' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <div className={`w-7 h-7 rounded text-xs flex items-center justify-center font-bold mr-3 ${txn.type === 'BUY' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
                         {txn.type.charAt(0)}
                       </div>
                       <div>
@@ -686,11 +725,10 @@ const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium text-gray-900">{txn.amount}</div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        txn.status === 'Completed' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${txn.status === 'Completed'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-amber-100 text-amber-800'
+                        }`}>
                         {txn.status}
                       </span>
                     </div>
@@ -712,17 +750,17 @@ const Dashboard = () => {
                     <span>Neutral: 15%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-green-500 h-2 rounded-full"
                       style={{ width: '65%' }}
                     ></div>
-                    <div 
+                    <div
                       className="bg-red-500 h-2 rounded-full -ml-1"
                       style={{ width: '20%' }}
                     ></div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-start">
@@ -733,7 +771,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-amber-50 rounded-lg">
                     <div className="flex items-start">
                       <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 mr-2" />

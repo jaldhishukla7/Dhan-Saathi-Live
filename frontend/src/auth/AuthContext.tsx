@@ -1,68 +1,62 @@
-// AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useEffect, useState } from "react";
+import api from "../api/axios";
 
-interface User {
-  id: string;
-  name: string;
+type User = {
+  id: number;
+  username: string;
   email: string;
-  plan: string;
-}
+};
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  isLoading: boolean;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const token = localStorage.getItem("access_token");
+
+    if (!token) return;
+
+    // Always fetch fresh user from backend
+    api
+      .get("/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setUser(res.data);
+        localStorage.setItem("user", JSON.stringify(res.data));
+      })
+      .catch(() => {
+        // Token expired or invalid
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        setUser(null);
+      });
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Simulate an API call
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockUser: User = {
-      id: '1',
-      name: 'John Doe',
-      email,
-      plan: 'Premium',
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    setIsLoading(false);
-  };
-
   const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
     setUser(null);
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, logout }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 };
